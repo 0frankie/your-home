@@ -1,7 +1,16 @@
 from globals import db
 from models import Image
 
+import numpy as np
 
+def cosine_similarity(vec_a, vec_b):
+    vec_a = np.asarray(vec_a, dtype=np.float32)
+    vec_b = np.asarray(vec_b, dtype=np.float32)
+    norm_a = np.linalg.norm(vec_a)
+    norm_b = np.linalg.norm(vec_b)
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return float(np.dot(vec_a, vec_b) / (norm_a * norm_b))
 
 class RoomRecommenderService:
     def __init__(self):
