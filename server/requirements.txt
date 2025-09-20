@@ -6,6 +6,7 @@ greenlet==3.2.4
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
+numpy==2.3.3
 pyngrok==7.3.0
 PyYAML==6.0.2
 SQLAlchemy==2.0.43
