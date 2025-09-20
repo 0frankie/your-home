@@ -6,16 +6,20 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ContentView: View {
     var body: some View {
+        let deviceID = UIDevice.current.identifierForVendor!.uuidString
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
         }
         .padding()
+        .onAppear {
+            print(KingfisherManager.shared)
+        }
     }
 }
 
