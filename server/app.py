@@ -1,8 +1,9 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 import os
 from globals import db, hash_password
 from models import User, Image, user_likes
 from sqlalchemy.exc import IntegrityError
+from recommender import RoomRecommenderService
 
 
 # Create the Flask app
@@ -10,10 +11,11 @@ app = Flask(__name__, instance_relative_config=True)
 
 DB_NAME = "app.db"
 DB_PATH = os.path.join("./instance", DB_NAME)
+IMAGES_DIR = "./images"
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db.init_app(app)
+recommender_service = RoomRecommenderService()
 
 # Define a route
 @app.route("/")
@@ -47,6 +49,7 @@ def authenticate():
     result = db.session.execute(stmt)
     user = result.scalar_one_or_none()
 
+
     if not user:
         return jsonify({"error": "invalid credentials"}), 401
 
@@ -54,6 +57,9 @@ def authenticate():
     if user.hashed_password != hashed_pw:
         return jsonify({"error": "invalid credentials"}), 401
     
+    if device_id is not None and user:
+        user.device_id = device_id
+        db.session.commit()
     return jsonify(user.to_dict()), 200
 
 @app.route("/api/get-image-likes/<image_id>", methods=["GET"])
@@ -78,6 +84,39 @@ def like_image():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Image already liked"}), 400
+    
+@app.route("/api/get-image-metadata/<image_id>", methods=["GET"])
+def get_image(image_id):
+    image = db.session.get(Image, image_id)
+    if image is None:
+        return jsonify({"error": "Image not found"}), 404
+
+    return jsonify({
+        "id": image.id,
+        "image_path": image.image_path,
+        "liked_by": [user.username for user in image.liked_by]
+    }), 200
+
+@app.route("/api/get-image-file/<image_id>", methods=["GET"])
+def get_image_file(image_id):
+    image = db.session.get(Image, image_id)
+    if image is None:
+        return jsonify({"error": "Image not found"}), 404
+
+    image_full_path = os.path.join(image.image_path)
+    if not os.path.isfile(image_full_path):
+        return jsonify({"error": "Image file not found"}), 404
+
+    return send_file(image_full_path, mimetype='image/jpeg')
+
+@app.route("/api/get-user-recommendations/<user_id>", methods=["GET"])
+def get_user_recommendations(user_id):
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+    
+    recommendations = recommender_service.get_recommendations(user, top_k=10)
+    return jsonify({"user_id": user_id, "recommendations": recommendations}), 200
 
 
 # Run the app

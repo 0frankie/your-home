@@ -1,9 +1,10 @@
 import os
-from app import DB_PATH, app
+from app import DB_PATH, IMAGES_DIR, app
 from globals import db, hash_password
 from models import *
 import numpy as np
 import csv
+import ast
 from sqlalchemy import select
 
 
@@ -87,18 +88,7 @@ def initialize_data():
     adminpw = "admin"
     admin = User(username="admin", email="admin@admin", hashed_password=hash_password(adminpw), device_id="admindevice")
 
-    emb = np.array([0.1, 0.2, 0.3], dtype=np.float32)
-    emb_bytes = emb.tobytes()
-    image1 = Image(image_path="/path/to/image1.jpg", embedding=emb_bytes)
-    image2 = Image(image_path="/path/to/image1.jpg", embedding=emb_bytes)
-    image3 = Image(image_path="/path/to/image1.jpg", embedding=emb_bytes)
-    image4 = Image(image_path="/path/to/image1.jpg", embedding=emb_bytes)
 
-    liked_imgs = [image1, image2, image3, image4]
-
-    db.session.add_all(liked_imgs)
-
-    user1.liked_images.append(image1)
     db.session.add(admin)
     db.session.add(user1)
     db.session.commit()
@@ -121,14 +111,17 @@ def main():
         pass
 
 	# create a new sqlite DB file (connect creates the file)
+
+
+    os.makedirs(IMAGES_DIR, exist_ok=True)   
     with app.app_context():
         db.create_all()
-        initialize_data()
         load_embeddings(
             "image_embeddings.csv",
             old_prefix="/content/drive/MyDrive/1000 images/",
-            new_base="./images"
+            new_base=IMAGES_DIR
         )
+        initialize_data()
     # Replace new_base with folder name
 
     print(f"Created fresh database at {DB_PATH}")
