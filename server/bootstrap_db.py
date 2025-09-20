@@ -22,8 +22,10 @@ def initialize_data():
     image4 = Image(image_path="/path/to/image1.jpg", embedding=emb_bytes)
 
     liked_imgs = [image1, image2, image3, image4]
-    user1.liked_images = liked_imgs
 
+    db.session.add_all(liked_imgs)
+
+    user1.liked_images.append(image1)
     db.session.add(admin)
     db.session.add(user1)
     db.session.commit()

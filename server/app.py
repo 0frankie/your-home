@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 import os
 from globals import db, hash_password
-from models import User, user_likes
+from models import User, Image, user_likes
+from sqlalchemy.exc import IntegrityError
 
 
 # Create the Flask app
@@ -57,13 +58,27 @@ def authenticate():
 
 @app.route("/api/get-image-likes/<image_id>", methods=["GET"])
 def get_image_likes(image_id):
-    stmt = db.select(user_likes).where(user_likes.c.image_id == image_id)
+    stmt = db.select(db.func.count()).select_from(user_likes).where(user_likes.c.image_id == image_id)
     result = db.session.execute(stmt)
-    user = result.scalars().all()
+    count = result.scalar()
+    return jsonify({"image_id": image_id, "like_count": count})
 
-    print(user[0])
+@app.route("/api/like-image", methods=["POST"])
+def like_image():
+    obj = request.get_json()
+    user_id = obj.get("user_id")
+    image_id = obj.get("image_id")
 
-    return "image likes"
+    user = db.session.get(User, user_id)
+    image = db.session.get(Image, image_id)
+    user.liked_images.append(image)
+    try:
+        db.session.commit()
+        return jsonify({"message": "Image liked successfully"}), 200
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Image already liked"}), 400
+
 
 # Run the app
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ from sqlalchemy import String, JSON, ForeignKey, Integer, LargeBinary
 user_likes = db.Table(
     'user_to_image',
     db.Model.metadata,
-    db.Column('username', Integer, ForeignKey('users.username'), primary_key=True),
+    db.Column('username', String, ForeignKey('users.username'), primary_key=True),
     db.Column('image_id', Integer, ForeignKey('images.id'), primary_key=True)
 )
 
