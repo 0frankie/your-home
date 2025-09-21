@@ -6,11 +6,20 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ImagePage: View {
+    let image = KFImage(URL(string: "https://electroluminescent-plagihedral-dane.ngrok-free.app/api/get-image-file/1"))
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        let scale = UIScreen.main.scale
+        let resizingProcessor = ResizingImageProcessor(referenceSize: CGSize(width: 1000.0 * scale, height: 1000.0 * scale), mode: .aspectFill)
+        image.resizable().setProcessor(resizingProcessor)
     }
+}
+
+func rescaledImage(url: URL) {
+    
 }
 
 #Preview {
