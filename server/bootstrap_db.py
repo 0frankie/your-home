@@ -3,8 +3,6 @@ from app import DB_PATH, IMAGES_DIR, app
 from globals import db, hash_password
 from models import *
 import numpy as np
-import csv
-import ast
 from sqlalchemy import select
 import pandas as pd
 
@@ -26,6 +24,26 @@ def load_embeddings(csv_path, img_dir=IMAGES_DIR):
             embedding=embedding_bytes,
         )
         db.session.add(image_obj)
+    db.session.commit()
+
+def load_candidate_texts(csv_path):
+    df = pd.read_csv(csv_path)
+
+    for _, row in df.iterrows():
+        text = row["text"]
+        category, val = [part.strip() for part in text.split("|", 1)]
+
+
+        embedding_list = [float(x) for x in row["embeddings"].strip("[]").split(",")]
+        embedding_array = np.array(embedding_list, dtype=np.float32)
+
+        embedding_bytes = embedding_array.tobytes()
+        text_obj = CandidateText(
+            text=val,
+            category=category,
+            embedding=embedding_bytes,
+        )
+        db.session.add(text_obj)
     db.session.commit()
 
 def initialize_data():
@@ -76,6 +94,7 @@ def main():
             IMAGES_DIR
         )
         initialize_data()
+        load_candidate_texts("cand_texts.csv")
     # Replace new_base with folder name
 
     print(f"Created fresh database at {DB_PATH}")

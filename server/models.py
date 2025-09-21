@@ -51,3 +51,14 @@ class User(db.Model):
             "email": self.email,
             "device_id": self.device_id
         }
+
+class CandidateText(db.Model):
+    __tablename__ = "candidate_texts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    text: Mapped[str] = mapped_column(String, nullable=False)
+    category: Mapped[str] = mapped_column(String, nullable=False)
+    embedding: Mapped[list[bytes]] = mapped_column(LargeBinary, nullable=False)
+
+    def __repr__(self):
+        return f"<CandidateText {self.id} - {self.text[:30]}...>"

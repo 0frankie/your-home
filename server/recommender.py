@@ -88,4 +88,7 @@ class RoomRecommenderService:
 
 
     def get_generated_pref(self, user):
-        pass
+        average_pref = self.get_average_user_pref(user)
+
+        
+
