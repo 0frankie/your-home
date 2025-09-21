@@ -9,7 +9,13 @@ import SwiftUI
 import Kingfisher
 
 struct ContentView: View {
-    @State var loginResponse: APIManager.AuthData = APIManager.AuthData.emptyAuthData()
+    @State var loginResponse: APIManager.AuthData = APIManager.AuthData.empty()
+    @State var likeResponse: APIManager.ImageLikedData =
+        APIManager.ImageLikedData.empty()
+    @State var IDResponse: APIManager.ImageIDData =
+        APIManager.ImageIDData.empty()
+    @State var fileResponse: APIManager.ImageFileData =
+        APIManager.ImageFileData.empty()
     
     var body: some View {
         VStack {
