@@ -5,10 +5,14 @@ Flask-SQLAlchemy==3.1.1
 greenlet==3.2.4
 itsdangerous==2.2.0
 Jinja2==3.1.6
+joblib==1.5.2
 MarkupSafe==3.0.2
 numpy==2.3.3
 pyngrok==7.3.0
 PyYAML==6.0.2
+scikit-learn==1.7.2
+scipy==1.16.2
 SQLAlchemy==2.0.43
+threadpoolctl==3.6.0
 typing_extensions==4.15.0
 Werkzeug==3.1.3
