@@ -19,12 +19,15 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            
+            LoginView()
         }
         .padding()
         .onAppear {
             Task {
-                loginResponse = await APIManager.login(baseurlData: "https://electroluminescent-plagihedral-dane.ngrok-free.app/", deviceID: UIDevice.current.identifierForVendor!.uuidString, username: "franklin", password: "password")
+                loginResponse = await APIManager.login(deviceID: UIDevice.current.identifierForVendor!.uuidString, username: "franklin", password: "password")
+                
+//                likeResponse = await APIManager.like_image(baseurlData: "https://electroluminescent-plagihedral-dane.ngrok-free.app/", userID: 1, imageID: 4)
+                IDResponse = await APIManager.get_rec(userID: 1)
             }
         }
     }

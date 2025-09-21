@@ -6,13 +6,19 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ImagePage: View {
+    let id : Int
+    var image: some View {
+        KFImage(APIManager.get_img(imageID: id))
+    }
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        image.fixedSize(horizontal: false, vertical: false)
     }
 }
 
 #Preview {
-    ImagePage()
+    ImagePage(id: 1)
 }
