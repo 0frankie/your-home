@@ -1,3 +1,6 @@
 /server/venv
 app.db
 /server/images
+/venv
+/source
+*.pyc

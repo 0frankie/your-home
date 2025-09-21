@@ -88,9 +88,19 @@ def initialize_data():
     adminpw = "admin"
     admin = User(username="admin", email="admin@admin", hashed_password=hash_password(adminpw), device_id="admindevice")
 
+    test_user_pw = "test"
+    test_user = User(username="testuser", email="test@test", hashed_password=hash_password(test_user_pw), device_id="testdevice")
+    img_ids = [21, 173, 186, 225, 241, 271, 298, 301, 318, 334, 362, 379, 392, 394, 466, 560, 568, 585, 620, 685, 693, 717, 733, 826, 859]
+    for img_id in img_ids:
+        img = db.session.get(Image, img_id)
+        if img:
+            test_user.liked_images.append(img)
+                                
+
 
     db.session.add(admin)
     db.session.add(user1)
+    db.session.add(test_user)
     db.session.commit()
 
 
