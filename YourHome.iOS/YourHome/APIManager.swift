@@ -1,7 +1,8 @@
 import Foundation
 
+let baseurlData: String = "https://electroluminescent-plagihedral-dane.ngrok-free.app"
+
 internal class APIManager {
-    
     // Singleton pattern (optional, but can be useful)
     static let shared = APIManager()
     
@@ -78,7 +79,7 @@ internal class APIManager {
     
     
     // Function to make POST request
-    func postData(url: String, parameters: [String : String], requestType: RequestType) async -> any Data {
+    func postData<X, Y>(url: String, parameters: [X : Y], requestType: RequestType) async -> any Data {
         let empty1 = AuthData.empty()
         let empty2 = ImageLikedData.empty()
         
@@ -119,7 +120,7 @@ internal class APIManager {
                 } else {
                     // Error from server
                     print("Request failed with status code: \(httpResponse.statusCode)")
-                    return empty1
+                    return requestType.self.rawValue == "auth" ? empty1 : empty2
                 }
             }
         } catch {
@@ -130,7 +131,7 @@ internal class APIManager {
     
     func getData(url: String, requestType: RequestType) async -> any Data {
         let empty1 = ImageIDData.empty()
-        let empty2 = ImageFileData.empty()
+//        let empty2 = ImageFileData.empty()
         
         guard let url_Processed = URL(string: url) else { return empty1 }
         
@@ -156,13 +157,13 @@ internal class APIManager {
                         }
                     }
                    
-                    if requestType.self.rawValue == "getImage" {
-                        if let json = try? JSONSerialization.jsonObject(with: data) {
-                            let decoder = JSONDecoder()
-                            let parsed = try decoder.decode(ImageFileData.self, from: data)
-                            return parsed
-                        }
-                    }
+//                    if requestType.self.rawValue == "getImage" {
+//                        if let json = try? JSONSerialization.jsonObject(with: data) {
+//                            let decoder = JSONDecoder()
+//                            let parsed = try decoder.decode(ImageFileData.self, from: data)
+//                            return parsed
+//                        }
+//                    }
 
                 } else {
                     // Error from server
@@ -176,28 +177,28 @@ internal class APIManager {
         return empty1
     }
     
-    static internal func login(baseurlData: String, deviceID: String, username: String, password: String) async -> AuthData {
+    static internal func login(deviceID: String, username: String, password: String) async -> AuthData {
         let authenticateUrl = baseurlData + "/api/authenticate"
         let PARAMETERS = ["device_id": deviceID, "username": username, "password": password] // Replace with actual parameters you need to send
         return await APIManager.shared.postData(url: authenticateUrl, parameters: PARAMETERS, requestType: RequestType.authType) as! AuthData
     }
     
     
-    static internal func get_rec(baseurlData: String, userID: String) async -> ImageIDData {
-        let recUrl = baseurlData + "/get-user-recommendations/" + userID
+    static internal func get_rec(userID: Int) async -> ImageIDData {
+        let recUrl = baseurlData + "/api/get-user-recommendations/" + String(userID)
         return await APIManager.shared.getData(url: recUrl, requestType: RequestType.recType) as! ImageIDData
     }
     
     
-    static internal func like_image(baseurlData: String , userID: String, imageID: String) async -> ImageLikedData {
+    static internal func like_image(userID: Int, imageID: Int) async -> ImageLikedData {
         let imageLikedUrl = baseurlData + "/api/like-image"
-        let PARAMETERS = ["user_id": userID, "imageID": imageID]
-        return await APIManager.shared.postData(url: imageLikedUrl, parameters: PARAMETERS, requestType: RequestType.imageType) as! APIManager.ImageLikedData
+        let PARAMETERS = ["user_id": userID, "image_id": imageID]
+        return await APIManager.shared.postData(url: imageLikedUrl, parameters: PARAMETERS, requestType: RequestType.likeType) as! APIManager.ImageLikedData
     }
     
-    static internal func get_rec(baseurlData: String, userID: String) async -> ImageFileData {
-        let getfileUrl = baseurlData + "/get-user-recommendations/" + userID
-        return await APIManager.shared.getData(url: getfileUrl, requestType: RequestType.recType) as! ImageFileData
+    static internal func get_img(imageID: Int) -> URL? {
+        let getfileUrl = baseurlData + "/api/get-image-file/" + String(imageID)
+        return URL(string: getfileUrl)
     }
     
 }
