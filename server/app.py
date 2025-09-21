@@ -116,7 +116,7 @@ def get_user_recommendations(user_id):
         return jsonify({"error": "User not found"}), 404
     
     recommendations = recommender_service.get_recommendations(user, top_k=10)
-    return jsonify({"user_id": user_id, "recommendations": recommendations}), 200
+    return jsonify({"image_ids": recommendations}), 200
 
 
 # Run the app
