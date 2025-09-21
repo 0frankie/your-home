@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct InfiniteScrollPage: View {
+    @State var clicked: Bool = false
     @State var recommendations: APIManager.ImageIDData
     let user: APIManager.AuthData
     
@@ -73,6 +74,17 @@ struct InfiniteScrollPage: View {
                         }
                     }
             )
+            .simultaneousGesture(
+                DragGesture()
+                    .onChanged { value in
+                        if value.translation.width > 400 || value.translation.width < 400 {
+                            Task {
+                                await APIManager.like_image(userID: user.id, imageID: recommendations.image_ids[currentIndex])
+                                currentIndex += 1
+                            }
+                        }
+                    }
+                )
         }
         .clipped() // Prevents views from appearing outside the GeometryReader frame
         .ignoresSafeArea() // Makes the view full-screen
@@ -84,7 +96,32 @@ struct InfiniteScrollPage: View {
                 }
             }
         }
-    }
+        Button(action: {
+            Task {
+                clicked = true
+            }
+        }) {
+            if clicked {
+                ProgressView()
+            } else {
+                Text("Personalized Room")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+        }
+        .padding(.top, 10)
+            NavigationLink(
+                destination: FavoriteView(recs: recommendations, user: user),
+                isActive: $clicked
+            ) {
+                EmptyView()
+            }
+        }
+    
 
     /// Checks if the currently visible item is near the end of the list.
     private func shouldLoadMoreData(currentItemIndex index: Int) -> Bool {

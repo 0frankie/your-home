@@ -202,5 +202,9 @@ internal class APIManager {
         return URL(string: getfileUrl)
     }
     
+    static internal func get_favorite(userID: Int) -> URL? {
+        let getfileUrl = baseurlData + "/api/get-generated-preferences/" + String(userID)
+        return URL(string: getfileUrl)
+    }
 }
 
