@@ -37,15 +37,14 @@ internal class APIManager {
     }
     
     struct ImageIDData : Data {
-        
-        var imageIDData: [Int]
+        var image_ids: [Int]
         
         static func empty() -> ImageIDData {
-            .init(imageIDData: [])
+            .init(image_ids: [])
         }
         
         static func == (lhs: APIManager.ImageIDData, rhs: APIManager.ImageIDData) -> Bool {
-            return lhs.imageIDData == rhs.imageIDData
+            return lhs.image_ids == rhs.image_ids
         }
         
     }
@@ -103,6 +102,7 @@ internal class APIManager {
                     // Success
                     if requestType.self.rawValue == "auth" {
                         if let json = try? JSONSerialization.jsonObject(with: data) {
+                            print(json)
                             let decoder = JSONDecoder()
                             let parsed = try decoder.decode(AuthData.self, from: data)
                             return parsed
@@ -124,7 +124,7 @@ internal class APIManager {
                 }
             }
         } catch {
-            print("Request error: \(error.localizedDescription)")
+            print("Request error setter: \(error.localizedDescription)")
         }
         return empty1
     }
@@ -151,6 +151,7 @@ internal class APIManager {
                     // Success
                     if requestType.self.rawValue == "recommendations" {
                         if let json = try? JSONSerialization.jsonObject(with: data) {
+                            print(json)
                             let decoder = JSONDecoder()
                             let parsed = try decoder.decode(ImageIDData.self, from: data)
                             return parsed
@@ -172,7 +173,7 @@ internal class APIManager {
                 }
             }
         } catch {
-            print("Request error: \(error.localizedDescription)")
+            print("Request error getter: \(error.localizedDescription)")
         }
         return empty1
     }

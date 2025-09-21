@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		F8EB856A2E7E87E1006A0972 /* yourhome.icon in Resources */ = {isa = PBXBuildFile; fileRef = F8EB85692E7E87E1006A0972 /* yourhome.icon */; };
 		F8EB85722E7F1E94006A0972 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F8EB85712E7F1E94006A0972 /* Kingfisher */; };
+		F8EB85E32E8001EF006A0972 /* VTabView in Frameworks */ = {isa = PBXBuildFile; productRef = F8EB85E22E8001EF006A0972 /* VTabView */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8EB85E32E8001EF006A0972 /* VTabView in Frameworks */,
 				F8EB85722E7F1E94006A0972 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -129,6 +131,7 @@
 			name = YourHome;
 			packageProductDependencies = (
 				F8EB85712E7F1E94006A0972 /* Kingfisher */,
+				F8EB85E22E8001EF006A0972 /* VTabView */,
 			);
 			productName = YourHome;
 			productReference = F8EB85312E7E798B006A0972 /* YourHome.app */;
@@ -214,6 +217,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F8EB856F2E7F1D58006A0972 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				F8EB85E12E8001BD006A0972 /* XCRemoteSwiftPackageReference "swiftui-vertical-tab-view" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F8EB85322E7E798B006A0972 /* Products */;
@@ -603,6 +607,14 @@
 				minimumVersion = 8.5.0;
 			};
 		};
+		F8EB85E12E8001BD006A0972 /* XCRemoteSwiftPackageReference "swiftui-vertical-tab-view" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lorenzofiamingo/swiftui-vertical-tab-view.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -610,6 +622,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F8EB856F2E7F1D58006A0972 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		F8EB85E22E8001EF006A0972 /* VTabView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8EB85E12E8001BD006A0972 /* XCRemoteSwiftPackageReference "swiftui-vertical-tab-view" */;
+			productName = VTabView;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
