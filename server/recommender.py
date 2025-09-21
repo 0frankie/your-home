@@ -29,7 +29,9 @@ class RoomRecommenderService:
         # heuristic: sqrt of likes, capped at 5, min 1
         return int(max(1, min(k_max, round(np.sqrt(n_likes)))))
     
-    
+    @staticmethod
+    def get_average_user_pref(self):
+        pass    
 
     def get_recommendations(self, user, top_k=10):
 
@@ -82,5 +84,5 @@ class RoomRecommenderService:
         return [cand_ids[i] for i in top_idx]
 
 
-    def get_generated_pre(self, user):
+    def get_generated_pref(self, user):
         pass
