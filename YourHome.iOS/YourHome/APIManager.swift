@@ -7,13 +7,26 @@ internal class APIManager {
     
     private init() {}
     
-    struct AuthData : Codable {
+    protocol Data : Codable {
+        static func empty() -> Self
+        
+        static func == (lhs: Self, rhs: Self) -> Bool
+    }
+    
+    enum RequestType {
+        case auth
+        case recommendations
+        case like
+        case getImage
+    }
+    
+    struct AuthData : Data {
         var device_id: String
         var email: String
         var id: Int
         var username: String
         
-        static func emptyAuthData() -> AuthData {
+        static func empty() -> AuthData {
             .init(device_id: "", email: "", id: -1, username: "")
         }
         
@@ -25,8 +38,8 @@ internal class APIManager {
     
     
     // Function to make POST request
-    func postData(url: String, parameters: [String : String]) async -> AuthData {
-        let empty = AuthData.emptyAuthData()
+    func postData(url: String, parameters: [String : String], requestType: RequestType) async -> AuthData {
+        let empty = AuthData.empty()
         guard let url_Processed = URL(string: url) else { return empty }
         
         var request = URLRequest(url: url_Processed)
@@ -64,7 +77,7 @@ internal class APIManager {
     static internal func login(baseurlData: String, deviceID: String, username: String, password: String) async -> AuthData {
         let PARAMETERS = ["device_id": deviceID, "username": username, "password": password] // Replace with actual parameters you need to send
         let authenticateUrl = baseurlData + "/api/authenticate"
-        return await APIManager.shared.postData(url: authenticateUrl, parameters: PARAMETERS)
+        return await APIManager.shared.postData(url: authenticateUrl, parameters: PARAMETERS, requestType: RequestType.auth)
     }
     
 }
