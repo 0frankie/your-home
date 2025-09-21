@@ -30,8 +30,11 @@ class RoomRecommenderService:
         return int(max(1, min(k_max, round(np.sqrt(n_likes)))))
     
     @staticmethod
-    def get_average_user_pref(self):
-        pass    
+    def get_average_user_pref(user):
+        liked_imgs = [RoomRecommenderService.blob_to_vec(img.embedding) for img in user.liked_images]
+        avg = np.mean(liked_imgs, axis=0).astype(np.float32)
+        norm = np.linalg.norm(avg)
+        return avg / norm
 
     def get_recommendations(self, user, top_k=10):
 
