@@ -116,10 +116,20 @@ def get_user_recommendations(user_id):
         return jsonify({"error": "User not found"}), 404
     
     recommendations = recommender_service.get_recommendations(user, top_k=10)
-    return jsonify({"user_id": user_id, "recommendations": recommendations}), 200
+    return jsonify({"image_ids": recommendations}), 200
+
+@app.route("/api/get-generated-preference/<user_id>", methods=["GET"])
+def get_generated_preference(user_id):
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+    
+    # Placeholder preference logic
+    img = recommender_service.get_generated_pref(user)
+
+    return jsonify("generated-pref"), 200
 
 
 # Run the app
 if __name__ == "__main__":
-
     app.run(debug=True, port=5000)
