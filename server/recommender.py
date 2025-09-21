@@ -29,12 +29,27 @@ class RoomRecommenderService:
         # heuristic: sqrt of likes, capped at 5, min 1
         return int(max(1, min(k_max, round(np.sqrt(n_likes)))))
     
-    @staticmethod
-    def get_average_user_pref(user):
-        liked_imgs = [RoomRecommenderService.blob_to_vec(img.embedding) for img in user.liked_images]
-        avg = np.mean(liked_imgs, axis=0).astype(np.float32)
-        norm = np.linalg.norm(avg)
-        return avg / norm
+    def kmeans_weighted_avg(vectors: list[np.ndarray]) -> np.ndarray:
+        L = normalize(np.stack(vectors).astype(np.float32), norm="l2")
+
+        n_likes = L.shape[0]
+        k = min(RoomRecommenderService.choose_k(n_likes), n_likes)
+
+        if k == 1:
+            centroids = L.mean(axis=0, keepdims=True)
+            counts = np.array([n_likes], dtype=int)
+        else:
+            km = KMeans(n_clusters=k, n_init="auto", random_state=123)
+            labels = km.fit_predict(L)
+            centroids = km.cluster_centers_
+            counts = np.bincount(labels, minlength=k)
+
+        w = counts.astype(np.float32)
+        w = w / (w.sum() + 1e-12)
+        user_pref = (w[:, None] * centroids).sum(axis=0, keepdims=True)
+
+        user_pref = normalize(user_pref, norm="l2")[0]
+        return user_pref
 
     def get_recommendations(self, user, top_k=10):
 
@@ -47,25 +62,9 @@ class RoomRecommenderService:
         liked_vecs = []
         for img in liked_imgs:
             liked_vecs.append(self.blob_to_vec(img.embedding))
-        # Create list of all embeddings
-        # Split into clusters
-        # Take weighted average with clustering
-        L = normalize(np.stack(liked_vecs).astype(np.float32), norm="l2")
-        n_likes = L.shape[0]
-        k = min(self.choose_k(n_likes), n_likes)
-        if k == 1:
-            centroids = L.mean(axis=0, keepdims=True)
-            counts = np.array([n_likes], dtype=int)
-        else:
-            km = KMeans(n_clusters=k, n_init="auto", random_state=123)
-            labels = km.fit_predict(L)
-            centroids = km.cluster_centers_
-            counts = np.bincount(labels, minlength=k)
-        w = counts.astype(np.float32)
-        w = w / (w.sum() + 1e-12)
-        user_pref = (w[:, None] * centroids).sum(axis=0, keepdims=True)
-        user_pref = normalize(user_pref, norm="l2")
-        
+        # Call kmeans_weighted_avg
+        user_pref = self.kmeans_weighted_avg(liked_vecs).reshape(1, -1)
+        # ------------------------
         liked_ids = {img.id for img in user.liked_images}
         rows = db.session.execute(db.select(Image.id, Image.embedding)).all()
         cand_ids, cand_vecs = [], []
