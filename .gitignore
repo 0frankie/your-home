@@ -2,6 +2,9 @@
 app.db
 <<<<<<< Updated upstream
 /server/images
+/venv
+/source
+*.pyc
 =======
 *.pyc
 __pycache__/
