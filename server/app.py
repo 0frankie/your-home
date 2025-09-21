@@ -4,7 +4,9 @@ from globals import db, hash_password
 from models import User, Image, user_likes
 from sqlalchemy.exc import IntegrityError
 from recommender import RoomRecommenderService
+import base64
 
+import io
 
 # Create the Flask app
 app = Flask(__name__, instance_relative_config=True)
@@ -117,6 +119,36 @@ def get_user_recommendations(user_id):
     
     recommendations = recommender_service.get_recommendations(user, top_k=10)
     return jsonify({"image_ids": recommendations}), 200
+
+
+@app.route("/api/get-generated-preferences/<user_id>", methods=["GET"])
+def get_generated_preferences(user_id):
+    user = db.session.get(User, int(user_id))
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    if user.liked_images is None or len(user.liked_images) == 0:
+        return jsonify({"error": "User has no liked images"}), 400
+    
+    response = recommender_service.get_generated_pref(user)
+    if response.status_code != 200:
+        return jsonify({"error": "Image generation failed", "details": response.text}), 500
+
+    # Raw image bytes directly
+    output_image = response.content  
+    finish_reason = response.headers.get("finish-reason")
+    seed = response.headers.get("seed")
+
+    if finish_reason == "CONTENT_FILTERED":
+        return jsonify({"error": "Image blocked by NSFW filter"}), 400
+
+    # Return via Flask
+    return send_file(
+        io.BytesIO(output_image),
+        mimetype=f"image/jpeg",
+        as_attachment=False,
+        download_name=f"room.jpeg"
+    )
 
 
 # Run the app

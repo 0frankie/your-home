@@ -1,10 +1,48 @@
-from globals import db
-from models import Image
+from globals import db, STABILITY_KEY
+from models import Image, CandidateText
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import normalize
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
 
 import numpy as np
+
+import requests
+
+def send_generation_request(
+    host,
+    params,
+    files = None
+):
+    headers = {
+        "Accept": "image/*",
+        "Authorization": f"Bearer {STABILITY_KEY}"
+    }
+
+    if files is None:
+        files = {}
+
+    # Encode parameters
+    image = params.pop("image", None)
+    mask = params.pop("mask", None)
+    if image is not None and image != '':
+        files["image"] = open(image, 'rb')
+    if mask is not None and mask != '':
+        files["mask"] = open(mask, 'rb')
+    if len(files)==0:
+        files["none"] = ''
+
+    # Send request
+    print(f"Sending REST request to {host}...")
+    response = requests.post(
+        host,
+        headers=headers,
+        files=files,
+        data=params
+    )
+    if not response.ok:
+        raise Exception(f"HTTP {response.status_code}: {response.text}")
+
+    return response
 
 class RoomRecommenderService:
     def __init__(self):
@@ -29,7 +67,20 @@ class RoomRecommenderService:
         # heuristic: sqrt of likes, capped at 5, min 1
         return int(max(1, min(k_max, round(np.sqrt(n_likes)))))
     
-    def kmeans_weighted_avg(vectors: list[np.ndarray]) -> np.ndarray:
+    def most_similar_rows(self, user_pref, rows):
+        best_row = rows[0]
+        vec0 = self.blob_to_vec(best_row.embedding)
+        best_score = self.cosine_similarity(user_pref, vec0)
+
+        for row in rows:
+            vec = self.blob_to_vec(row.embedding)
+            score = self.cosine_similarity(user_pref, vec)
+            if score > best_score:
+                best_score = score
+                best_row = row
+        return best_row
+    
+    def kmeans_weighted_avg(self, vectors: list[np.ndarray]) -> np.ndarray:
         L = normalize(np.stack(vectors).astype(np.float32), norm="l2")
 
         n_likes = L.shape[0]
@@ -87,7 +138,67 @@ class RoomRecommenderService:
 
 
     def get_generated_pref(self, user):
-        average_pref = self.get_average_user_pref(user)
+        liked_imgs = list(user.liked_images)
+        liked_vecs = []
+        for img in liked_imgs:
+            liked_vecs.append(self.blob_to_vec(img.embedding))
+        # Call kmeans_weighted_avg
+        user_pref = self.kmeans_weighted_avg(liked_vecs).reshape(1, -1)
 
+        stmt = db.select(CandidateText).where(CandidateText.category == "style")
+        style_rows = db.session.execute(stmt).scalars().all()
+
+        stmt = db.select(CandidateText).where(CandidateText.category == "color scheme")
+        color_rows = db.session.execute(stmt).scalars().all()
+
+        stmt = db.select(CandidateText).where(CandidateText.category == "layout")
+        layout_rows = db.session.execute(stmt).scalars().all()
+
+        stmt = db.select(CandidateText).where(CandidateText.category == "materials")
+        material_rows = db.session.execute(stmt).scalars().all()
+
+        stmt = db.select(CandidateText).where(CandidateText.category == "lighting")
+        lighting_rows = db.session.execute(stmt).scalars().all()
+
+        stmt = db.select(CandidateText).where(CandidateText.category == "decor")
+        decor_rows = db.session.execute(stmt).scalars().all()
+
+        best_style = self.most_similar_rows(user_pref, style_rows)
+        best_color = self.most_similar_rows(user_pref, color_rows)
+        best_layout = self.most_similar_rows(user_pref, layout_rows)
+        best_material = self.most_similar_rows(user_pref, material_rows)
+        best_lighting = self.most_similar_rows(user_pref, lighting_rows)
+        best_decor = self.most_similar_rows(user_pref, decor_rows)
+
+        # print(best_style.text, best_color.text, best_layout.text, best_material.text, best_lighting.text, best_decor.text)
+        description = (
+            f"This {best_style.text.lower()} bedroom features a {best_color.text.lower()} palette, "
+            f"with a {best_layout.text.lower()} design. "
+            f"Materials include {best_material.text.lower()}, "
+            f"illuminated by {best_lighting.text.lower()}. "
+            f"Decor is styled with {best_decor.text.lower()}."
+        )
+        aspect_ratio = "16:9" 
+        seed = 0 #@param {type:"integer"}
+        output_format = "jpeg" 
         
+        host = f"https://api.stability.ai/v2beta/stable-image/generate/core"
+        params = {
+            "prompt" : description,
+            "aspect_ratio" : aspect_ratio,
+            "seed" : seed,
+            "output_format": output_format
+        }
+
+        response = send_generation_request(
+            host,
+            params
+        )
+        return response
+
+
+
+
+
+
 
