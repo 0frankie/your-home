@@ -75,8 +75,8 @@ def like_image():
     user_id = obj.get("user_id")
     image_id = obj.get("image_id")
 
-    user = db.session.get(User, user_id)
-    image = db.session.get(Image, image_id)
+    user = db.session.get(User, int(user_id))
+    image = db.session.get(Image, int(image_id))
     user.liked_images.append(image)
     try:
         db.session.commit()
@@ -87,7 +87,7 @@ def like_image():
     
 @app.route("/api/get-image-metadata/<image_id>", methods=["GET"])
 def get_image(image_id):
-    image = db.session.get(Image, image_id)
+    image = db.session.get(Image, int(image_id))
     if image is None:
         return jsonify({"error": "Image not found"}), 404
 
@@ -99,7 +99,7 @@ def get_image(image_id):
 
 @app.route("/api/get-image-file/<image_id>", methods=["GET"])
 def get_image_file(image_id):
-    image = db.session.get(Image, image_id)
+    image = db.session.get(Image, int(image_id))
     if image is None:
         return jsonify({"error": "Image not found"}), 404
 
@@ -111,12 +111,12 @@ def get_image_file(image_id):
 
 @app.route("/api/get-user-recommendations/<user_id>", methods=["GET"])
 def get_user_recommendations(user_id):
-    user = db.session.get(User, user_id)
+    user = db.session.get(User, int(user_id))
     if user is None:
         return jsonify({"error": "User not found"}), 404
     
     recommendations = recommender_service.get_recommendations(user, top_k=10)
-    return jsonify({"user_id": user_id, "recommendations": recommendations}), 200
+    return jsonify({"image_ids": recommendations}), 200
 
 
 # Run the app

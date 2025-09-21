@@ -28,6 +28,10 @@ class RoomRecommenderService:
     def choose_k(n_likes: int, k_max: int = 5) -> int:
         # heuristic: sqrt of likes, capped at 5, min 1
         return int(max(1, min(k_max, round(np.sqrt(n_likes)))))
+    
+    @staticmethod
+    def get_average_user_pref(self):
+        pass    
 
     def get_recommendations(self, user, top_k=10):
 
@@ -58,6 +62,7 @@ class RoomRecommenderService:
         w = w / (w.sum() + 1e-12)
         user_pref = (w[:, None] * centroids).sum(axis=0, keepdims=True)
         user_pref = normalize(user_pref, norm="l2")
+        
         liked_ids = {img.id for img in user.liked_images}
         rows = db.session.execute(db.select(Image.id, Image.embedding)).all()
         cand_ids, cand_vecs = [], []
@@ -77,3 +82,7 @@ class RoomRecommenderService:
         sims = sk_cosine(user_pref, C)[0]
         top_idx = np.argsort(-sims)[:top_k]
         return [cand_ids[i] for i in top_idx]
+
+
+    def get_generated_pref(self, user):
+        pass
